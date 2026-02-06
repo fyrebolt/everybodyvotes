@@ -10,6 +10,9 @@ function loadClient() {
         window.location.href = "index.html";
     }
     loadAPI().then(function() {
+        // Wait a bit to ensure gapi.client.civicinfo is fully initialized
+        return new Promise(resolve => setTimeout(resolve, 100));
+    }).then(function() {
         if(sessionStorage.getItem("guest")!="yes"){
             //person has an account
             isUser = true
