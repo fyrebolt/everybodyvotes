@@ -1,10 +1,35 @@
 function loadAPI(){
-    gapi.load("client");
-    gapi.client.setApiKey("AIzaSyD-OzrPVgxU-zjXEgWW3LA2xFhTXJJr2uc");
-    return gapi.client.load("https://civicinfo.googleapis.com/$discovery/rest?version=v2")
-        .then(function() { console.log("GAPI client loaded for API"); },
-              function(err) { console.error("Error loading GAPI client for API", err); });
+    return new Promise((resolve, reject) => {
+        gapi.load("client", {
+            callback: function() {
+                gapi.client.setApiKey("AIzaSyD-OzrPVgxU-zjXEgWW3LA2xFhTXJJr2uc");
+                gapi.client.load("https://civicinfo.googleapis.com/$discovery/rest?version=v2")
+                    .then(function() {
+                        console.log("GAPI client loaded for API");
+                        // Verify civicinfo is actually available
+                        if (gapi.client.civicinfo) {
+                            console.log("Civicinfo API confirmed ready");
+                            resolve();
+                        } else {
+                            console.error("Civicinfo API not available");
+                            reject(new Error("Civicinfo API not loaded"));
+                        }
+                    }, function(err) {
+                        console.error("Error loading GAPI client for API", err);
+                        reject(err);
+                    });
+            },
+            onerror: function() {
+                reject(new Error("Failed to load GAPI"));
+            },
+            timeout: 5000,
+            ontimeout: function() {
+                reject(new Error("GAPI load timeout"));
+            }
+        });
+    });
 }
+
 function loadClient() {
     if(!(localStorage.getItem("loggedIn")=="yes" || sessionStorage.getItem("guest")=="yes")){
         window.location.href = "index.html";
